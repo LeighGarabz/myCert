@@ -1,9 +1,11 @@
+
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
+import 'package:my_cert/screens/GettingStartedScreen.dart';
 import 'package:at_demo_data/at_demo_data.dart' as at_demo_data;
 import 'package:my_cert/nav/Nav.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 String atSign;
 
@@ -16,29 +18,51 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool showSpinner = false;
   // ServerDemoService _serverDemoService = ServerDemoService.getInstance();
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        title: new Text('Are you sure?'),
+        content: new Text('Do you want to exit @my_cert'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: new Text('Yes'),
+          ),
+        ],
+      ),
+    )) ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          '@my_cert',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+    return new WillPopScope(
+      onWillPop: _onWillPop,
+      child: new Scaffold(
+        appBar: AppBar(
+            title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+               Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Welcome to @my_cert'),
+              ),
+          ],
           ),
-        ),
-      ),
-      body: Center(
+    centerTitle: true,
+    ),
 
-        child: Center(
+        body: Center(
           child: ListView(
             children: <Widget>[
               Container(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Text("Welcome to @my_cert",
+                  child: Text("",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
@@ -59,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               Container(
                 width: 501,
-                height: 220,
+                height: 250,
                 child: Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0),
@@ -114,27 +138,51 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       Container(
-                        margin: EdgeInsets.all(20),
+                        margin: EdgeInsets.all(12),
                         child: TextButton(
                             child: Text(
-                                "Get started".toUpperCase(),
+                                "Submit".toUpperCase(),
                                 style: TextStyle(
-                                  fontSize: 35,
+                                  fontSize: 20,
                                   color: Colors.white,
                                 )
                             ),
                             style: ButtonStyle(
-                                padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(15)),
+                                padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(12)),
                                 foregroundColor: MaterialStateProperty.all<Color>(Colors.red),
                                 backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
                                 shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                                     RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18.0),
+                                        borderRadius: BorderRadius.circular(10.0),
                                         side: BorderSide(color: Colors.red)
                                     )
                                 )
                             ),
                             onPressed: _login
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.all(12),
+                        child: TextButton(
+                            child: Text(
+                                "Get an @sign",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                )
+                            ),
+                            style: ButtonStyle(
+                                padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.all(12)),
+                                foregroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                                backgroundColor: MaterialStateProperty.all<Color>(Colors.red),
+                                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                    RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12.0),
+                                        side: BorderSide(color: Colors.red)
+                                    )
+                                )
+                            ),
+                            onPressed:_launchURL
                         ),
                       ),
                     ],
@@ -151,27 +199,42 @@ class _LoginScreenState extends State<LoginScreen> {
   // TODO: Write _login method
   /// Use onboard() to authenticate via PKAM public/private keys.
   _login() async {
-    print("mkjdkjf");
-    Navigator.pushReplacementNamed(context, Nav.id);
+    print("welcome to my_cert");
+    if (atSign != null) {
+      FocusScope.of(context).unfocus();
+      setState(() {
+        showSpinner = true;
+        Navigator.pushReplacementNamed(context, Nav.id);
+      });
+    }
 
   }
+  _launchURL() async {
+    const url = 'https://atsign.com/get-an-sign/';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
-  //   FocusScope.of(context).unfocus();
-  //   setState(() {
-  //     showSpinner = true;
-  //   });
-  //   Navigator.pushReplacementNamed(context, DashBoard.id);
-  //   String jsonData = _serverDemoService.encryptKeyPairs(atSign);
-  //   if (atSign != null) {
-  //     _serverDemoService.onboard(atsign: atSign).then((value) async {
-  //       Navigator.pushReplacementNamed(context, DashBoard.id);
-  //     }).catchError((error) async {
-  //       await _serverDemoService.authenticate(atSign,
-  //           jsonData: jsonData, decryptKey: at_demo_data.aesKeyMap[atSign]);
-  //       Navigator.pushReplacementNamed(context, DashBoard.id);
-  //     });
-  //   }else{
-  //     Navigator.pushReplacementNamed(context, DashBoard.id);
-  //   }
-  // }
+
+//   FocusScope.of(context).unfocus();
+//   setState(() {
+//     showSpinner = true;
+//   });
+//   Navigator.pushReplacementNamed(context, DashBoard.id);
+//   String jsonData = _serverDemoService.encryptKeyPairs(atSign);
+//   if (atSign != null) {
+//     _serverDemoService.onboard(atsign: atSign).then((value) async {
+//       Navigator.pushReplacementNamed(context, DashBoard.id);
+//     }).catchError((error) async {
+//       await _serverDemoService.authenticate(atSign,
+//           jsonData: jsonData, decryptKey: at_demo_data.aesKeyMap[atSign]);
+//       Navigator.pushReplacementNamed(context, DashBoard.id);
+//     });
+//   }else{
+//     Navigator.pushReplacementNamed(context, DashBoard.id);
+//   }
+// }
 }
